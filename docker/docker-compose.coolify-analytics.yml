@@ -1,9 +1,11 @@
 services:
   vector:
     volumes:
-      # Mount directory so /etc/vector/vector.yml is present as a file
-      - ./volumes/logs:/etc/vector:ro,z
+      # Mount config directory to a custom path to avoid conflicts with /etc/vector
+      - ./volumes/logs:/etc/vector-config:ro,z
       - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock:ro,z
+    environment:
+      VECTOR_CONFIG: /etc/vector-config/vector.yml
 
   # Keep DB dependency on Vector healthy check to preserve startup order
   db:

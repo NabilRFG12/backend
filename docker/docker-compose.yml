@@ -447,9 +447,11 @@ services:
     image: timberio/vector:0.28.1-alpine
     restart: unless-stopped
     volumes:
-      # Mount the entire config directory to avoid file-binding issues in some orchestrators
-      - ./volumes/logs:/etc/vector:ro,z
+      # Mount config directory to a custom path to avoid conflicts with /etc/vector
+      - ./volumes/logs:/etc/vector-config:ro,z
       - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock:ro,z
+    environment:
+      VECTOR_CONFIG: /etc/vector-config/vector.yml
     healthcheck:
       test:
         [
