@@ -1,0 +1,16 @@
+services:
+  # Override Vector to avoid docker socket usage in Coolify
+  vector:
+    volumes:
+      # Replace default vector.yml with an empty config (no docker_logs source)
+      - ./volumes/logs/vector.empty.yml:/etc/vector/vector.yml:ro,z
+    # Remove docker socket mount by replacing volumes list entirely
+    # Healthcheck remains valid on :9001/health
+
+  # DB originally depends on Vector being healthy. Remove that dependency
+  db:
+    depends_on:
+      # Keep analytics dependency so logs backend is present, but do not block on Vector
+      analytics:
+        condition: service_healthy
+

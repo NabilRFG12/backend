@@ -1,0 +1,8 @@
+api:
+  enabled: true
+  address: 0.0.0.0:9001
+
+# No sources/transforms/sinks. This lets Vector run healthy
+# in environments where mounting the Docker socket is restricted
+# (e.g., Coolify), preventing the stack from failing.
+
