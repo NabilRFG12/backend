@@ -457,7 +457,7 @@ services:
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
     command:
       [
-        "--config",
+        "--config-yaml",
         "/etc/vector-config/vector.yml"
       ]
     healthcheck:
