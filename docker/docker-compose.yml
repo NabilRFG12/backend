@@ -444,7 +444,7 @@ services:
 
   vector:
     container_name: supabase-vector
-    image: timberio/vector:0.28.1-alpine
+    image: timberio/vector:0.36.0-alpine
     restart: unless-stopped
     volumes:
       # Mount config directory to a custom path to avoid conflicts with /etc/vector
@@ -453,7 +453,6 @@ services:
       - ./volumes/logs/vector.yml:/etc/vector-config/vector.yml:ro,z
       - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock:ro,z
     environment:
-      VECTOR_CONFIG: /etc/vector-config/vector.yml
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
     command:
       [
