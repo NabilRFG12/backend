@@ -447,11 +447,11 @@ services:
     image: timberio/vector:0.36.0-alpine
     restart: unless-stopped
     volumes:
-      # Mount config directory to a custom path to avoid conflicts with /etc/vector
-      - ./volumes/logs:/etc/vector-config:ro,z
-      # Explicitly bind the config file to ensure it exists at the expected path
-      - ./volumes/logs/vector.yml:/etc/vector-config/vector.yml:ro,z
       - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock:ro,z
+    configs:
+      - source: vector_config
+        target: /etc/vector-config/vector.yml
+        mode: 0444
     environment:
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
     command:
@@ -533,3 +533,7 @@ services:
 
 volumes:
   db-config:
+
+configs:
+  vector_config:
+    file: ./volumes/logs/vector.yml
