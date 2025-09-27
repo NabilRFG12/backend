@@ -449,6 +449,8 @@ services:
     volumes:
       # Mount config directory to a custom path to avoid conflicts with /etc/vector
       - ./volumes/logs:/etc/vector-config:ro,z
+      # Explicitly bind the config file to ensure it exists at the expected path
+      - ./volumes/logs/vector.yml:/etc/vector-config/vector.yml:ro,z
       - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock:ro,z
     environment:
       VECTOR_CONFIG: /etc/vector-config/vector.yml
@@ -468,9 +470,10 @@ services:
           "--spider",
           "http://vector:9001/health"
         ]
-      timeout: 5s
-      interval: 5s
-      retries: 3
+      timeout: 10s
+      interval: 10s
+      retries: 12
+      start_period: 20s
     
     security_opt:
       - "label=disable"
