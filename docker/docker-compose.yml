@@ -452,6 +452,7 @@ services:
       - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock:ro,z
     environment:
       VECTOR_CONFIG: /etc/vector-config/vector.yml
+      LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
     command:
       [
         "--config",
@@ -470,13 +471,7 @@ services:
       timeout: 5s
       interval: 5s
       retries: 3
-    environment:
-      LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
-    command:
-      [
-        "--config",
-        "/etc/vector/vector.yml"
-      ]
+    
     security_opt:
       - "label=disable"
 
