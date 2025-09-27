@@ -17,6 +17,10 @@ transforms:
       .project = "default"
       .event_message = del(.message)
       .appname = del(.container_name)
+      # Drop Vector container logs to avoid recursion and noise
+      if starts_with!(.appname, "vector-") {
+        abort
+      }
       del(.container_created_at)
       del(.container_id)
       del(.source_type)
@@ -30,13 +34,13 @@ transforms:
     inputs:
       - project_logs
     route:
-      kong: '.appname == "supabase-kong"'
-      auth: '.appname == "supabase-auth"'
-      rest: '.appname == "supabase-rest"'
-      realtime: '.appname == "supabase-realtime"'
-      storage: '.appname == "supabase-storage"'
-      functions: '.appname == "supabase-functions"'
-      db: '.appname == "supabase-db"'
+      kong: 'starts_with!(.appname, "kong-") || .appname == "supabase-kong"'
+      auth: 'starts_with!(.appname, "auth-") || .appname == "supabase-auth"'
+      rest: 'starts_with!(.appname, "rest-") || .appname == "supabase-rest"'
+      realtime: 'starts_with!(.appname, "realtime-") || .appname == "supabase-realtime"'
+      storage: 'starts_with!(.appname, "storage-") || .appname == "supabase-storage"'
+      functions: 'starts_with!(.appname, "functions-") || .appname == "supabase-functions"'
+      db: 'starts_with!(.appname, "db-") || .appname == "supabase-db"'
   # Ignores non nginx errors since they are related with kong booting up
   kong_logs:
     type: remap
@@ -166,7 +170,7 @@ sinks:
     request:
       retry_max_duration_secs: 10
       headers:
-        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN:-}
     uri: 'http://analytics:4000/api/logs?source_name=gotrue.logs.prod'
   logflare_realtime:
     type: 'http'
@@ -178,7 +182,7 @@ sinks:
     request:
       retry_max_duration_secs: 10
       headers:
-        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN:-}
     uri: 'http://analytics:4000/api/logs?source_name=realtime.logs.prod'
   logflare_rest:
     type: 'http'
@@ -190,7 +194,7 @@ sinks:
     request:
       retry_max_duration_secs: 10
       headers:
-        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN:-}
     uri: 'http://analytics:4000/api/logs?source_name=postgREST.logs.prod'
   logflare_db:
     type: 'http'
@@ -202,7 +206,7 @@ sinks:
     request:
       retry_max_duration_secs: 10
       headers:
-        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN:-}
     # We must route the sink through kong because ingesting logs before logflare is fully initialised will
     # lead to broken queries from studio. This works by the assumption that containers are started in the
     # following order: vector > db > logflare > kong
@@ -217,7 +221,7 @@ sinks:
     request:
       retry_max_duration_secs: 10
       headers:
-        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN:-}
     uri: 'http://analytics:4000/api/logs?source_name=deno-relay-logs'
   logflare_storage:
     type: 'http'
@@ -229,7 +233,7 @@ sinks:
     request:
       retry_max_duration_secs: 10
       headers:
-        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN?LOGFLARE_PUBLIC_ACCESS_TOKEN is required}
+        x-api-key: ${LOGFLARE_PUBLIC_ACCESS_TOKEN:-}
     uri: 'http://analytics:4000/api/logs?source_name=storage.logs.prod.2'
   logflare_kong:
     type: 'http'
