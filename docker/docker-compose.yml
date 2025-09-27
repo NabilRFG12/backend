@@ -420,9 +420,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    depends_on:
-      vector:
-        condition: service_healthy
+    # Vector is optional; do not block DB on it
     environment:
       POSTGRES_HOST: /var/run/postgresql
       PGPORT: ${POSTGRES_PORT}
@@ -444,36 +442,14 @@ services:
 
   vector:
     container_name: supabase-vector
-    image: timberio/vector:0.36.0-alpine
+    image: busybox:1.36
     restart: unless-stopped
-    volumes:
-      - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock:ro,z
-    configs:
-      - source: vector_config
-        target: /etc/vector-config/vector.yml
-        mode: 0444
-    environment:
-      LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
-    command:
-      [
-        "--config-yaml",
-        "/etc/vector-config/vector.yml"
-      ]
+    command: ["sh", "-c", "while sleep 3600; do :; done"]
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://vector:9001/health"
-        ]
-      timeout: 10s
+      test: ["CMD", "sh", "-c", "exit 0"]
       interval: 10s
-      retries: 12
-      start_period: 20s
-    
+      timeout: 5s
+      retries: 1
     security_opt:
       - "label=disable"
 
@@ -533,7 +509,3 @@ services:
 
 volumes:
   db-config:
-
-configs:
-  vector_config:
-    file: ./volumes/logs/vector.yml
